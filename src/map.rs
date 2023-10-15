@@ -60,6 +60,21 @@ impl Map {
             false
         }
     }
+
+    pub fn get_empty_neighbours(&self, pos: &TilePos) -> Vec<(TilePos, Direction)> {
+        let directions = vec![
+            Direction::Up,
+            Direction::Down,
+            Direction::Right,
+            Direction::Left,
+        ];
+
+        directions
+            .into_iter()
+            .map(|dir| (pos.translate(&dir), dir))
+            .filter(|(p, _)| !MAP.is_wall(p))
+            .collect()
+    }
 }
 
 const TILE_SIZE: i32 = 8;
@@ -86,6 +101,10 @@ impl TilePos {
         let new_x = (self.x as i32 + translate_x).max(0).min(MAP_WIDTH as i32);
         let new_y = (self.y as i32 + translate_y).max(0).min(MAP_HEIGHT as i32);
         Self { x: new_x, y: new_y }
+    }
+
+    pub fn dist_to(&self, other: &TilePos) -> f32 {
+        ((self.x - other.x).abs() + (self.y - other.y).abs()) as f32 / 2.0
     }
 }
 

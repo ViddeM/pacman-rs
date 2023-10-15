@@ -47,14 +47,9 @@ pub struct Map([[MapType; MAP_WIDTH]; MAP_HEIGHT]);
 impl Map {
     /// Returns wether the tile at [pos] is a wall or not.
     /// If the position is outside of map tiles, returns true
-    pub fn is_wall(&self, x: u32, y: u32) -> bool {
-        // Bounds check
-        if x < 0 || y < 0 {
-            return true;
-        }
-
-        let x = x as usize;
-        let y = y as usize;
+    pub fn is_wall(&self, tile_pos: &TilePos) -> bool {
+        let x = tile_pos.x as usize;
+        let y = tile_pos.y as usize;
         if x >= MAP_WIDTH || y >= MAP_HEIGHT {
             return true;
         }
@@ -64,6 +59,33 @@ impl Map {
         } else {
             false
         }
+    }
+}
+
+const TILE_SIZE: i32 = 8;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct TilePos {
+    pub x: i32,
+    pub y: i32,
+}
+
+impl TilePos {
+    pub fn to_display_pos(&self) -> Vec2 {
+        Vec2::new((self.x * TILE_SIZE) as f32, (self.y * TILE_SIZE) as f32)
+    }
+
+    pub fn translate(&self, dir: &Direction) -> Self {
+        let (translate_x, translate_y) = match dir {
+            Direction::Up => (0, -1),
+            Direction::Right => (1, 0),
+            Direction::Down => (0, 1),
+            Direction::Left => (-1, 0),
+        };
+
+        let new_x = (self.x as i32 + translate_x).max(0).min(MAP_WIDTH as i32);
+        let new_y = (self.y as i32 + translate_y).max(0).min(MAP_HEIGHT as i32);
+        Self { x: new_x, y: new_y }
     }
 }
 

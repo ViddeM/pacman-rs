@@ -2,21 +2,21 @@ use bevy::prelude::*;
 
 use crate::common::Direction;
 
-#[derive(Component, PartialEq)]
+#[derive(Component, Clone, Debug, PartialEq)]
 pub enum MapType {
     Wall(WallType),
     Open(OpenContent),
     GhostOnlyBarrier,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum OpenContent {
     None,
     Food,
     GhostEater,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum WallType {
     Straight(Direction),
     DoubleStraight(Direction),
@@ -30,7 +30,7 @@ pub enum WallType {
     HorizontalLineInnerCornerTopLeft,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Corner {
     TopRight,
     TopLeft,
@@ -45,6 +45,20 @@ const MAP_HEIGHT: usize = 31;
 pub struct Map([[MapType; MAP_WIDTH]; MAP_HEIGHT]);
 
 impl Map {
+    const FORBIDDEN_TILES: [TilePos; 11] = [
+        TilePos { x: 11, y: 13 },
+        TilePos { x: 11, y: 14 },
+        TilePos { x: 11, y: 15 },
+        TilePos { x: 12, y: 15 },
+        TilePos { x: 13, y: 15 },
+        TilePos { x: 14, y: 15 },
+        TilePos { x: 15, y: 15 },
+        TilePos { x: 16, y: 15 },
+        TilePos { x: 16, y: 14 },
+        TilePos { x: 16, y: 13 },
+        TilePos { x: 15, y: 13 },
+    ];
+
     /// Returns wether the tile at [pos] is a wall or not.
     /// If the position is outside of map tiles, returns true
     pub fn is_wall(&self, tile_pos: &TilePos) -> bool {
@@ -61,6 +75,21 @@ impl Map {
         }
     }
 
+    pub fn get_at(&self, tile_pos: &TilePos) -> MapType {
+        if tile_pos.x < 0 || tile_pos.y < 0 {
+            panic!("Tile ({}, {}) out of bounds", tile_pos.x, tile_pos.y);
+        }
+
+        let x = tile_pos.x as usize;
+        let y = tile_pos.y as usize;
+
+        if x >= MAP_WIDTH || y >= MAP_HEIGHT {
+            panic!("Tile ({}, {}) out of bounds", tile_pos.x, tile_pos.y);
+        }
+
+        self[y][x].clone()
+    }
+
     pub fn get_empty_neighbours(&self, pos: &TilePos) -> Vec<(TilePos, Direction)> {
         let directions = vec![
             Direction::Up,
@@ -73,6 +102,7 @@ impl Map {
             .into_iter()
             .map(|dir| (pos.translate(&dir), dir))
             .filter(|(p, _)| !MAP.is_wall(p))
+            .filter(|(p, _)| !Map::FORBIDDEN_TILES.contains(p))
             .collect()
     }
 }

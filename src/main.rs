@@ -5,7 +5,7 @@ use common::Direction;
 use components::{AnimationIndices, AnimationTimer, Movable, Player, Position};
 use map::MapType;
 use map::{TilePos, MAP};
-use player::{check_collision, steer};
+use player::{check_collision, move_player, steer};
 use visuals::{animate_sprite, draw_movable, sprite_index_for_wall_type};
 
 mod ai;
@@ -38,7 +38,7 @@ fn main() {
             Update,
             (
                 animate_sprite,
-                move_character,
+                move_player,
                 draw_movable,
                 steer,
                 check_collision,
@@ -46,24 +46,6 @@ fn main() {
             ),
         )
         .run();
-}
-
-fn move_character(time: Res<Time>, mut query: Query<(&mut Position, &mut Movable)>) {
-    for (mut pos, mut movable) in &mut query {
-        let delta = time.delta().as_secs_f32();
-        let percent = movable.base_speed * delta;
-        movable.progress = movable.progress + percent;
-
-        if movable.progress >= 1.0 {
-            movable.progress = 0.0;
-            pos.0 = movable.target_tile.clone();
-
-            let new_tile = pos.translate(&movable.direction);
-            if !MAP.is_wall(&new_tile) {
-                movable.target_tile = new_tile;
-            }
-        }
-    }
 }
 
 fn setup(
@@ -116,11 +98,11 @@ fn spawn_characters(
     // Blinky
     let blinky_animation_indices =
         AnimationIndices::new(vec![60, 61], vec![62, 63], vec![64, 65], vec![66, 67]);
-    let blinky_start_tile = TilePos { x: 13, y: 12 };
+    let blinky_start_tile = TilePos { x: 13, y: 11 };
     commands.spawn((
         Position(blinky_start_tile.clone()),
         Movable {
-            base_speed: 10.0,
+            base_speed: 7.0,
             direction: Direction::Up,
             target_tile: blinky_start_tile,
             progress: 0.0,

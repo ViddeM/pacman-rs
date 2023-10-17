@@ -104,7 +104,7 @@ fn spawn_characters(
         Movable {
             base_speed: 7.0,
             direction: Direction::Up,
-            target_tile: blinky_start_tile,
+            target_tile: blinky_start_tile.clone(),
             progress: 0.0,
         },
         SpriteSheetBundle {
@@ -115,7 +115,10 @@ fn spawn_characters(
             ),
             ..default()
         },
-        Ghost,
+        Ghost {
+            target_tile: blinky_start_tile.clone(),
+            next_tile: blinky_start_tile,
+        },
         Blinky,
         blinky_animation_indices,
         AnimationTimer(Timer::from_seconds(1.0 / 8.0, TimerMode::Repeating)),
